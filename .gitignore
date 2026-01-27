@@ -3,7 +3,6 @@
 *.ap_
 *.aab
 *.iml
-.gradle/
 bin/
 gen/
 out/
@@ -32,4 +31,6 @@ core.*
 *.so
 *.bin
 .env
-/.gradle/
+/.gradle
+/.kotlin
+/app/release
