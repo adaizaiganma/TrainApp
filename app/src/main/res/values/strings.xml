@@ -44,7 +44,7 @@
     <string name="favorites_title">Favorite Routes</string>
     <string name="no_favorites">No favorite routes yet.</string>
 
-    <string name="search_header">Where to go?</string>
+    <string name="search_header">Search</string>
     <string name="label_origin">Origin</string>
     <string name="label_destination">Destination</string>
     <string name="placeholder_city">City</string>

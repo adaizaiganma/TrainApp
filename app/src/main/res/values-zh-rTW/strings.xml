@@ -45,7 +45,7 @@
     <string name="favorites_title">收藏路線</string>
     <string name="no_favorites">尚無收藏路線。</string>
 
-    <string name="search_header">想去哪裡？</string>
+    <string name="search_header">搜索</string>
     <string name="label_origin">出發地</string>
     <string name="label_destination">目的地</string>
     <string name="placeholder_city">縣市</string>

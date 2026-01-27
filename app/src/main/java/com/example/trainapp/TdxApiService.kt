@@ -40,10 +40,10 @@ interface TdxApiService {
        @Query("\$format") format: String = "JSON"
     ): Call<List<TdxODResponse>>
 
-    // 5. Get TRA Alerts
-    @GET("api/basic/v2/Rail/TRA/Alert")
+    // 5. Get TRA Alerts (Updated to V3)
+    @GET("api/basic/v3/Rail/TRA/Alert")
     fun getAlerts(
         @Header("Authorization") auth: String,
         @Query("\$format") format: String = "JSON"
-    ): Call<List<TdxAlert>>
+    ): Call<TdxAlertResponse>
 }

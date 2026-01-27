@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -90,18 +91,19 @@ fun FancySelectionBox(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
-    Surface(
+    Card(
         modifier = modifier
             .height(64.dp)
-            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
-        color = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
-        tonalElevation = 2.dp,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -158,129 +160,95 @@ fun CarTypeSelector(
                 .menuAnchor(),
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
             )
         )
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            onDismissRequest = { expanded = false }
         ) {
             carTypeOptions.forEach { type ->
                 DropdownMenuItem(
-                    text = { Text(type, style = MaterialTheme.typography.bodyLarge) },
+                    text = { Text(type) },
                     onClick = {
                         onTypeSelected(type)
                         expanded = false
-                    },
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    }
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CityStationSelectorFancy(
     cityLabel: String,
     selectedCity: String,
     selectedStation: Station?,
-    stationMap: Map<String, List<Station>>,
-    onCitySelected: (String) -> Unit,
-    onStationSelected: (Station?) -> Unit,
+    onCityClick: () -> Unit,
+    onStationClick: () -> Unit,
     icon: ImageVector
 ) {
-    var expandedCity by remember { mutableStateOf(false) }
-    var expandedStation by remember { mutableStateOf(false) }
-
-    val availableStations = stationMap[selectedCity] ?: emptyList()
-    val cities = stationMap.keys.toList().sorted()
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                RoundedCornerShape(24.dp)
-            )
-            .padding(16.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(20.dp))
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = cityLabel,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            // City Dropdown
-            ExposedDropdownMenuBox(
-                expanded = expandedCity,
-                onExpandedChange = { expandedCity = !expandedCity },
-                modifier = Modifier.weight(0.4f)
-            ) {
-                OutlinedTextField(
-                    value = selectedCity,
-                    onValueChange = {},
-                    readOnly = true,
-                    placeholder = { Text(stringResource(R.string.placeholder_city), fontSize = 12.sp) },
-                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null, modifier = Modifier.size(18.dp)) },
-                    modifier = Modifier.menuAnchor(),
-                    shape = RoundedCornerShape(12.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = cityLabel,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                ExposedDropdownMenu(expanded = expandedCity, onDismissRequest = { expandedCity = false }) {
-                    cities.forEach { city ->
-                        DropdownMenuItem(text = { Text(city) }, onClick = { onCitySelected(city); expandedCity = false; onStationSelected(null) })
-                    }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // City Box
+                Box(
+                    modifier = Modifier
+                        .weight(0.4f)
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .clickable { onCityClick() }
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = if (selectedCity.isEmpty()) stringResource(R.string.placeholder_city) else selectedCity,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (selectedCity.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                    )
                 }
-            }
 
-            // Station Dropdown
-            ExposedDropdownMenuBox(
-                expanded = expandedStation,
-                onExpandedChange = { if (selectedCity.isNotEmpty()) expandedStation = !expandedStation },
-                modifier = Modifier.weight(0.6f)
-            ) {
-                OutlinedTextField(
-                    value = selectedStation?.name ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    placeholder = { Text(stringResource(R.string.placeholder_station), fontSize = 12.sp) },
-                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null, modifier = Modifier.size(18.dp)) },
-                    modifier = Modifier.menuAnchor(),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = selectedCity.isNotEmpty(),
-                    textStyle = MaterialTheme.typography.bodyMedium,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                // Station Box
+                Box(
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .clickable(enabled = selectedCity.isNotEmpty()) { onStationClick() }
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = when {
+                            selectedCity.isEmpty() -> stringResource(R.string.select_city_first)
+                            selectedStation == null -> stringResource(R.string.placeholder_station)
+                            else -> selectedStation.name
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (selectedStation == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                     )
-                )
-                ExposedDropdownMenu(expanded = expandedStation, onDismissRequest = { expandedStation = false }) {
-                    availableStations.forEach { station ->
-                        DropdownMenuItem(text = { Text(station.name) }, onClick = { expandedStation = false; onStationSelected(station) })
-                    }
                 }
             }
         }
@@ -289,15 +257,22 @@ fun CityStationSelectorFancy(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(modifier: Modifier = Modifier) {
+fun SearchScreen(
+    modifier: Modifier = Modifier,
+    onSheetVisibilityChange: (Boolean) -> Unit = {}
+) {
     val app = TrainApp.instance
     var originCity by remember { mutableStateOf("") }
     var originStation by remember { mutableStateOf<Station?>(null) }
     var destCity by remember { mutableStateOf("") }
     var destStation by remember { mutableStateOf<Station?>(null) }
 
-    var selectedDate by remember { mutableStateOf("2026-01-19") }
-    var selectedTime by remember { mutableStateOf("12:00") }
+    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val stf = SimpleDateFormat("HH:mm", Locale.getDefault())
+    val now = Date()
+
+    var selectedDate by remember { mutableStateOf(sdf.format(now)) }
+    var selectedTime by remember { mutableStateOf(stf.format(now)) }
     
     val allTypesLabel = stringResource(R.string.car_type_all)
     var selectedCarType by remember { mutableStateOf(allTypesLabel) }
@@ -307,20 +282,35 @@ fun SearchScreen(modifier: Modifier = Modifier) {
     var isLoading by remember { mutableStateOf(false) }
 
     var favorites by remember { mutableStateOf(app.getFavorites()) }
-    var selectedRoute by remember { mutableStateOf<FavoriteRoute?>(null) }
 
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    // State for City/Station sheets
+    var showCitySheet by remember { mutableStateOf(false) }
+    var showStationSheet by remember { mutableStateOf(false) }
+    var selectionTarget by remember { mutableStateOf("origin") }
+
+    // Update bottom bar visibility
+    LaunchedEffect(showCitySheet, showStationSheet, showBottomSheet) {
+        onSheetVisibilityChange(showCitySheet || showStationSheet || showBottomSheet)
+    }
+
     LaunchedEffect(Unit) {
         TrainRepository.fetchAllStations { map -> stationDataMap = map }
+    }
+
+    val greeting = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        in 0..11 -> "Good Morning"
+        in 12..17 -> "Good Afternoon"
+        else -> "Good Evening"
     }
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(
-                brush = Brush.verticalGradient(
+                Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
                         MaterialTheme.colorScheme.surface
@@ -329,217 +319,120 @@ fun SearchScreen(modifier: Modifier = Modifier) {
             )
     ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 20.dp, bottom = 40.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Text(
-                    text = stringResource(R.string.search_header),
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = (-1).sp
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            // Station Selection Card
-            item {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        CityStationSelectorFancy(
-                            cityLabel = stringResource(R.string.label_origin),
-                            selectedCity = originCity,
-                            selectedStation = originStation,
-                            stationMap = stationDataMap,
-                            onCitySelected = { originCity = it },
-                            onStationSelected = { originStation = it },
-                            icon = Icons.Default.LocationOn
-                        )
-
-                        CityStationSelectorFancy(
-                            cityLabel = stringResource(R.string.label_destination),
-                            selectedCity = destCity,
-                            selectedStation = destStation,
-                            stationMap = stationDataMap,
-                            onCitySelected = { destCity = it },
-                            onStationSelected = { destStation = it },
-                            icon = Icons.Default.Flag
-                        )
-                    }
-
-                    // Swap Button Floating
-                    IconButton(
-                        onClick = {
-                            val tempCity = originCity
-                            val tempStation = originStation
-                            originCity = destCity
-                            originStation = destStation
-                            destCity = tempCity
-                            destStation = tempStation
-                        },
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 24.dp)
-                            .offset(y = 0.dp)
-                            .size(44.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.CompareArrows,
-                            contentDescription = "Invert",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
+                Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                    Text(greeting, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.nav_search), style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black))
                 }
             }
 
             item {
-                DateTimeRow(
-                    date = selectedDate,
-                    time = selectedTime,
-                    onDateSelected = { selectedDate = it },
-                    onTimeSelected = { selectedTime = it }
-                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        CityStationSelectorFancy(
+                            cityLabel = stringResource(R.string.label_origin),
+                            selectedCity = originCity,
+                            selectedStation = originStation,
+                            onCityClick = { selectionTarget = "origin"; showCitySheet = true },
+                            onStationClick = { selectionTarget = "origin"; showStationSheet = true },
+                            icon = Icons.Default.LocationOn
+                        )
+                        CityStationSelectorFancy(
+                            cityLabel = stringResource(R.string.label_destination),
+                            selectedCity = destCity,
+                            selectedStation = destStation,
+                            onCityClick = { selectionTarget = "dest"; showCitySheet = true },
+                            onStationClick = { selectionTarget = "dest"; showStationSheet = true },
+                            icon = Icons.Default.Flag
+                        )
+                    }
+                    FilledIconButton(
+                        onClick = {
+                            val tC = originCity; val tS = originStation
+                            originCity = destCity; originStation = destStation
+                            destCity = tC; destStation = tS
+                        },
+                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp).size(40.dp)
+                    ) { Icon(Icons.AutoMirrored.Filled.CompareArrows, "Invert") }
+                }
             }
 
-            item {
-                CarTypeSelector(selectedType = selectedCarType, onTypeSelected = { selectedCarType = it })
-            }
+            item { DateTimeRow(selectedDate, selectedTime, {selectedDate = it}, {selectedTime = it}) }
+            item { CarTypeSelector(selectedCarType) {selectedCarType = it} }
 
-            // Search and Favorite Row
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
                     val isFavorite = favorites.any { it.originId == originStation?.id && it.destId == destStation?.id }
-
-                    // Search Button
                     Button(
                         onClick = {
                             if (originStation != null && destStation != null) {
-                                selectedRoute = FavoriteRoute(originStation!!.id, originStation!!.name, destStation!!.id, destStation!!.name)
                                 isLoading = true
-                                TrainRepository.searchTrains(
-                                    originId = originStation!!.id,
-                                    destId = destStation!!.id,
-                                    date = selectedDate,
-                                    startTime = selectedTime,
-                                    carTypeKeyword = selectedCarType
-                                ) { results ->
-                                    searchResults = results
-                                    isLoading = false
-                                    showBottomSheet = true
+                                TrainRepository.searchTrains(originStation!!.id, destStation!!.id, selectedDate, selectedTime, selectedCarType) {
+                                    searchResults = it; isLoading = false; showBottomSheet = true
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(56.dp),
+                        modifier = Modifier.weight(1f).height(56.dp),
                         enabled = originStation != null && destStation != null && !isLoading,
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                        shape = RoundedCornerShape(16.dp)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
-                        } else {
-                            Icon(Icons.Default.Search, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(R.string.btn_search), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        }
+                        if (isLoading) CircularProgressIndicator(Modifier.size(24.dp), MaterialTheme.colorScheme.onPrimary)
+                        else { Icon(Icons.Default.Search, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.btn_search), fontWeight = FontWeight.Bold) }
                     }
-
-                    // Favorite Button
                     FilledTonalIconButton(
                         onClick = {
                             if (originStation != null && destStation != null) {
-                                val route = FavoriteRoute(
-                                    originId = originStation!!.id,
-                                    originName = originStation!!.name,
-                                    destId = destStation!!.id,
-                                    destName = destStation!!.name
-                                )
-                                if (isFavorite) {
-                                    app.removeFavorite(route)
-                                } else {
-                                    app.addFavorite(route)
-                                }
+                                val route = FavoriteRoute(originStation!!.id, originStation!!.name, destStation!!.id, destStation!!.name)
+                                if (isFavorite) app.removeFavorite(route) else app.addFavorite(route)
                                 favorites = app.getFavorites()
                             }
                         },
                         modifier = Modifier.size(56.dp),
                         enabled = originStation != null && destStation != null,
                         shape = RoundedCornerShape(16.dp),
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = if (isFavorite) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Crossfade(targetState = isFavorite, animationSpec = tween(300)) { favorite ->
-                            Icon(
-                                imageVector = if (favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = stringResource(R.string.btn_add_favorite),
-                                tint = if (favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            // --- FAVORITES SECTION ---
-            if (favorites.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = stringResource(R.string.favorites_title),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                items(favorites) { route ->
-                    FavoriteRouteItemFancy(
-                        route = route,
-                        onClick = {
-                            selectedRoute = route
-                            isLoading = true
-                            
-                            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                            val stf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                            val now = Date()
-                            
-                            TrainRepository.searchTrains(
-                                originId = route.originId,
-                                destId = route.destId,
-                                date = sdf.format(now),
-                                startTime = stf.format(now),
-                                carTypeKeyword = "All"
-                            ) { results ->
-                                searchResults = results
-                                isLoading = false
-                                showBottomSheet = true
-                            }
-                        },
-                        onDelete = {
-                            app.removeFavorite(route)
-                            favorites = app.getFavorites()
-                        }
-                    )
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = if (isFavorite) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
+                    ) { Icon(if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, null, tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) }
                 }
             }
         }
     }
 
-    if (showBottomSheet && selectedRoute != null) {
+    if (showCitySheet) {
+        ListSelectionSheet(
+            title = stringResource(R.string.placeholder_city),
+            items = stationDataMap.keys.toList().sorted(),
+            onItemSelected = {
+                if (selectionTarget == "origin") { originCity = it; originStation = null } 
+                else { destCity = it; destStation = null }
+                showCitySheet = false
+            },
+            onDismiss = { showCitySheet = false }
+        )
+    }
+
+    if (showStationSheet) {
+        val currentCity = if (selectionTarget == "origin") originCity else destCity
+        val stations = stationDataMap[currentCity] ?: emptyList()
+        ListSelectionSheet(
+            title = stringResource(R.string.placeholder_station),
+            items = stations.map { it.name },
+            onItemSelected = { name ->
+                val station = stations.find { it.name == name }
+                if (selectionTarget == "origin") originStation = station else destStation = station
+                showStationSheet = false
+            },
+            onDismiss = { showStationSheet = false }
+        )
+    }
+
+    if (showBottomSheet) {
         SearchResultSheet(
-            originName = selectedRoute!!.originName,
-            destName = selectedRoute!!.destName,
+            originName = originStation?.name ?: "",
+            destName = destStation?.name ?: "",
             searchResults = searchResults,
             onDismiss = { showBottomSheet = false },
             sheetState = sheetState
@@ -547,144 +440,26 @@ fun SearchScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun FavoriteRouteItemFancy(
-    route: FavoriteRoute,
-    onClick: () -> Unit,
-    onDelete: () -> Unit
-) {
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Train,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = "${route.originName} → ${route.destName}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            
-            IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchResultSheet(
-    originName: String,
-    destName: String,
-    searchResults: List<TrainSchedule>?,
-    onDismiss: () -> Unit,
-    sheetState: SheetState
+fun ListSelectionSheet(
+    title: String,
+    items: List<String>,
+    onItemSelected: (String) -> Unit,
+    onDismiss: () -> Unit
 ) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() },
-        containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+    TrainAppModalSheet(
+        onDismissRequest = onDismiss
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp)
-        ) {
-            // Header
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.results_header),
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
-                )
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = originName,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Icon(Icons.Default.ArrowForward, null, modifier = Modifier.size(16.dp).padding(horizontal = 4.dp))
-                        Text(
-                            text = destName,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            if (searchResults.isNullOrEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.outlineVariant
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            stringResource(R.string.no_results),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(searchResults) { train ->
-                        TrainCard(train = train)
-                    }
+        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
+            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                items(items) { item ->
+                    ListItem(
+                        headlineContent = { Text(item, style = MaterialTheme.typography.bodyLarge) },
+                        modifier = Modifier.clickable { onItemSelected(item) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 }
             }
         }

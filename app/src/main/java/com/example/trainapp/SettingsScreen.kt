@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,17 +27,16 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = TrainApp.instance
 
-    // --- State for Credentials ---
-    var clientId by remember { mutableStateOf(app.clientId) }
-    var clientSecret by remember { mutableStateOf(app.clientSecret) }
+    // --- State for Dialogs ---
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var showCredentialsDialog by remember { mutableStateOf(false) }
 
-    // --- State for Language ---
+    // --- State for Language Name ---
     val currentLocale = AppCompatDelegate.getApplicationLocales().toLanguageTags()
     val currentLanguageName = when {
-        currentLocale.contains("zh") -> "Traditional Chinese (繁體中文)"
+        currentLocale.contains("zh") -> "繁體中文"
         else -> "English"
     }
-    var showLanguageDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -52,47 +52,12 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         )
 
         // --- TDX Credentials Section ---
-        Text(
-            text = stringResource(R.string.settings_tdx_credentials),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 8.dp)
+        SettingsItem(
+            icon = Icons.Default.VpnKey,
+            title = stringResource(R.string.settings_tdx_credentials),
+            value = "",
+            onClick = { showCredentialsDialog = true }
         )
-
-        OutlinedTextField(
-            value = clientId,
-            onValueChange = { clientId = it },
-            label = { Text(stringResource(R.string.label_client_id)) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = clientSecret,
-            onValueChange = { clientSecret = it },
-            label = { Text(stringResource(R.string.label_client_secret)) },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                app.clientId = clientId
-                app.clientSecret = clientSecret
-                TrainRepository.resetToken()
-                Toast.makeText(context, context.getString(R.string.msg_credentials_saved), Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text(stringResource(R.string.btn_save))
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(24.dp))
 
         // --- Language Section ---
         SettingsItem(
@@ -100,6 +65,50 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             title = stringResource(R.string.settings_language),
             value = currentLanguageName,
             onClick = { showLanguageDialog = true }
+        )
+    }
+
+    // Credentials Dialog
+    if (showCredentialsDialog) {
+        var tempClientId by remember { mutableStateOf(app.clientId) }
+        var tempClientSecret by remember { mutableStateOf(app.clientSecret) }
+
+        AlertDialog(
+            onDismissRequest = { showCredentialsDialog = false },
+            title = { Text(stringResource(R.string.settings_tdx_credentials)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = tempClientId,
+                        onValueChange = { tempClientId = it },
+                        label = { Text(stringResource(R.string.label_client_id)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = tempClientSecret,
+                        onValueChange = { tempClientSecret = it },
+                        label = { Text(stringResource(R.string.label_client_secret)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    app.clientId = tempClientId
+                    app.clientSecret = tempClientSecret
+                    TrainRepository.resetToken()
+                    showCredentialsDialog = false
+                    Toast.makeText(context, context.getString(R.string.msg_credentials_saved), Toast.LENGTH_SHORT).show()
+                }) {
+                    Text(stringResource(R.string.btn_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCredentialsDialog = false }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
         )
     }
 
@@ -166,7 +175,8 @@ fun SettingsItem(
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
         )
 
         Spacer(modifier = Modifier.width(8.dp))

@@ -58,14 +58,18 @@ data class Station(
     val name: String
 )
 
-// 5. TRA Alert Models
+// 5. TRA Alert Models (TDX V3)
+data class TdxAlertResponse(
+    @SerializedName("Alerts") val alerts: List<TdxAlert>?
+)
+
 data class TdxAlert(
     @SerializedName("AlertID") val alertId: String,
-    @SerializedName("Title") val title: String,
-    @SerializedName("Description") val description: String,
+    @SerializedName("Title") val title: String?,
+    @SerializedName("Description") val description: String?,
     @SerializedName("Effects") val effects: String?,
-    @SerializedName("PublishTime") val publishTime: String,
-    @SerializedName("StartTime") val startTime: String,
-    @SerializedName("EndTime") val endTime: String,
+    @SerializedName("PublishTime") val publishTime: String?,
+    @SerializedName("StartTime") val startTime: String?,
+    @SerializedName("EndTime") val endTime: String?,
     @SerializedName("AlertUrl") val alertUrl: String?
 )

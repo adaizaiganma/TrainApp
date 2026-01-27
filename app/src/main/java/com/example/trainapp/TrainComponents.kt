@@ -1,30 +1,23 @@
 package com.example.trainapp
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-// --- Minimalist Pixel Board Palette ---
-val BoardBlack = Color(0xFF000000)
-val BoardOrange = Color(0xFFFF9800)
-val BoardGreen = Color(0xFF4CAF50)
-val BoardRed = Color(0xFFF44336)
-val BoardDivider = Color(0xFF222222)
 
 @Composable
 fun TrainCard(train: TrainSchedule) {
-    // Clean up car type naming
     val cleanedTrainType = when {
         train.trainType.contains("自強(3000)") -> "自強3000"
         train.trainType.contains("自強") -> "自強"
@@ -35,72 +28,182 @@ fun TrainCard(train: TrainSchedule) {
         else -> train.trainType.split("(")[0].trim()
     }
 
-    Column(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BoardBlack)
+            .padding(vertical = 6.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = 4.dp)
+                .padding(16.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Time
-            Text(
-                text = train.depTime,
-                color = BoardOrange,
-                fontSize = 20.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(65.dp)
-            )
-
-            // Train Info
             Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "${train.depTime} → ${train.arrTime}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.bound_for, train.destination),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = cleanedTrainType,
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.Monospace
-                    )
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = cleanedTrainType,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = train.trainNo,
-                        color = Color.White.copy(alpha = 0.6f),
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace
+                        text = "#${train.trainNo}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 }
-                Text(
-                    text = train.destination,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
             }
 
-            // Status
-            val isDelay = train.delayMinutes > 0
-            Text(
-                text = if (isDelay) {
-                    stringResource(R.string.status_delay, train.delayMinutes)
-                } else {
-                    stringResource(R.string.status_on_time)
-                },
-                color = if (isDelay) BoardRed else BoardGreen,
-                fontSize = 14.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.width(80.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.End
-            )
+            Column(horizontalAlignment = Alignment.End) {
+                val isDelay = train.delayMinutes > 0
+                val statusColor = if (isDelay) MaterialTheme.colorScheme.error else Color(0xFF4CAF50)
+                
+                Text(
+                    text = if (isDelay) {
+                        stringResource(R.string.status_delay, train.delayMinutes)
+                    } else {
+                        stringResource(R.string.status_on_time)
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = statusColor
+                )
+            }
         }
-        // Minimalist Divider
-        HorizontalDivider(color = BoardDivider, thickness = 1.dp)
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchResultSheet(
+    originName: String,
+    destName: String,
+    searchResults: List<TrainSchedule>?,
+    onDismiss: () -> Unit,
+    sheetState: SheetState
+) {
+    TrainAppModalSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = Modifier.fillMaxHeight(0.9f)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp)
+        ) {
+            // Header
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.results_header),
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                )
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = originName,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Icon(Icons.Default.ArrowForward, null, modifier = Modifier.size(16.dp).padding(horizontal = 4.dp))
+                        Text(
+                            text = destName,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            if (searchResults.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            stringResource(R.string.no_results),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(searchResults) { train ->
+                        TrainCard(train = train)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TrainAppModalSheet(
+    onDismissRequest: () -> Unit,
+    sheetState: SheetState = rememberModalBottomSheetState(),
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        dragHandle = { BottomSheetDefaults.DragHandle() },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        modifier = modifier,
+        content = content
+    )
 }
 
 @Composable
@@ -114,42 +217,19 @@ fun TrainListScreen(stationId: String, modifier: Modifier = Modifier) {
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(BoardBlack)
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp)
     ) {
-        // Simple Header Labels
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("TIME", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.width(65.dp))
-            Text("TRAIN / DEST", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.weight(1f))
-            Text("STATUS", color = Color.Gray, fontSize = 10.sp, modifier = Modifier.width(80.dp), textAlign = androidx.compose.ui.text.style.TextAlign.End)
-        }
-        
-        HorizontalDivider(color = Color.Gray.copy(alpha = 0.3f))
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 8.dp)
-        ) {
-            if (trains.isEmpty()) {
-                item {
-                    Text(
-                        text = loadingText,
-                        color = BoardOrange,
-                        modifier = Modifier.padding(16.dp),
-                        fontFamily = FontFamily.Monospace
-                    )
+        if (trains.isEmpty()) {
+            item {
+                Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-            } else {
-                items(trains) { train ->
-                    TrainCard(train = train)
-                }
+            }
+        } else {
+            items(trains) { train ->
+                TrainCard(train = train)
             }
         }
     }

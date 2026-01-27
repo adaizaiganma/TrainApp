@@ -8,9 +8,15 @@ import retrofit2.Response
 object TrainRepository {
     private var currentAccessToken: String? = null
 
-    // Helper to clear token if credentials change
+    // Cache variables
+    private var cachedAlerts: List<TdxAlert>? = null
+    private var cachedStations: Map<String, List<Station>>? = null
+
+    // Helper to clear token and cache if credentials change
     fun resetToken() {
         currentAccessToken = null
+        cachedAlerts = null
+        cachedStations = null
     }
 
     private fun withToken(onToken: (String) -> Unit, onFailure: () -> Unit) {
@@ -48,22 +54,29 @@ object TrainRepository {
         })
     }
 
-    fun fetchAlerts(onResult: (List<TdxAlert>) -> Unit) {
+    fun fetchAlerts(forceRefresh: Boolean = false, onResult: (List<TdxAlert>) -> Unit) {
+        if (!forceRefresh && cachedAlerts != null) {
+            onResult(cachedAlerts!!)
+            return
+        }
+
         withToken({ token ->
             RetrofitClient.dataService.getAlerts(token)
-                .enqueue(object : Callback<List<TdxAlert>> {
-                    override fun onResponse(call: Call<List<TdxAlert>>, response: Response<List<TdxAlert>>) {
+                .enqueue(object : Callback<TdxAlertResponse> {
+                    override fun onResponse(call: Call<TdxAlertResponse>, response: Response<TdxAlertResponse>) {
                         if (response.isSuccessful) {
-                            onResult(response.body() ?: emptyList())
+                            val alerts = response.body()?.alerts ?: emptyList()
+                            cachedAlerts = alerts
+                            onResult(alerts)
                         } else {
-                            onResult(emptyList())
+                            onResult(cachedAlerts ?: emptyList())
                         }
                     }
-                    override fun onFailure(call: Call<List<TdxAlert>>, t: Throwable) {
-                        onResult(emptyList())
+                    override fun onFailure(call: Call<TdxAlertResponse>, t: Throwable) {
+                        onResult(cachedAlerts ?: emptyList())
                     }
                 })
-        }, { onResult(emptyList()) })
+        }, { onResult(cachedAlerts ?: emptyList()) })
     }
 
     fun fetchTrains(stationId: String, onResult: (List<TrainSchedule>) -> Unit) {
@@ -96,6 +109,11 @@ object TrainRepository {
     }
 
     fun fetchAllStations(onResult: (Map<String, List<Station>>) -> Unit) {
+        if (cachedStations != null) {
+            onResult(cachedStations!!)
+            return
+        }
+
         withToken({ token ->
             RetrofitClient.dataService.getStationList(token)
                 .enqueue(object : Callback<List<TdxStation>> {
@@ -108,6 +126,7 @@ object TrainRepository {
                                 .mapValues { entry ->
                                     entry.value.map { Station(it.stationId, it.stationName.zh) }
                                 }
+                            cachedStations = map
                             onResult(map)
                         } else {
                             onResult(emptyMap())
@@ -151,7 +170,9 @@ object TrainRepository {
                                 )
                             }
 
-                            val timeFilteredList = fullList.filter { it.depTime >= startTime }
+                            val timeFilteredList = fullList.filter { 
+                                it.depTime.replace(":", "").toIntOrNull() ?: 0 >= startTime.replace(":", "").toIntOrNull() ?: 0
+                            }
 
                             val filteredList = if (carTypeKeyword.contains("All") || carTypeKeyword.contains("所有")) {
                                 timeFilteredList
