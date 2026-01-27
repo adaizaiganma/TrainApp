@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">Train Live</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="label_from_city">From City</string>
+    <string name="label_from_station">From Station</string>
+    <string name="label_to_city">To City</string>
+    <string name="label_to_station">To Station</string>
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+    <string name="label_car_type">Car Type</string>
+    <string name="btn_search">Search Trains</string>
+    <string name="select_city_first">Select City First</string>
+    <string name="loading">Loading...</string>
+    <string name="no_results">No trains found for this time.</string>
+    <string name="results_header">Search Results</string>
+
+    <string name="status_on_time">On Time</string>
+    <string name="status_delay">Late %1$d min</string>
+    <string name="bound_for">To %1$s</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="dialog_select_language">Select Language</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <string name="welcome_message">Welcome! Go to Search tab to find trains.</string>
+
+    <string name="car_type_all">All Types</string>
+    <string name="car_type_tze_chiang">Tze-Chiang Limited Exp</string>
+    <string name="car_type_puyuma">Taroko/Puyuma</string>
+    <string name="car_type_local">Local Train</string>
+
+    <string name="settings_tdx_credentials">TDX API Credentials</string>
+    <string name="label_client_id">Client ID</string>
+    <string name="label_client_secret">Client Secret</string>
+    <string name="btn_save">Save Credentials</string>
+    <string name="msg_credentials_saved">Credentials saved and reset.</string>
+
+    <string name="btn_add_favorite">Add to Favorite</string>
+    <string name="favorites_title">Favorite Routes</string>
+    <string name="no_favorites">No favorite routes yet.</string>
+
+    <string name="search_header">Where to go?</string>
+    <string name="label_origin">Origin</string>
+    <string name="label_destination">Destination</string>
+    <string name="placeholder_city">City</string>
+    <string name="placeholder_station">Station</string>
+
+    <string name="alerts_title">TRA Alerts</string>
+    <string name="no_alerts">No active alerts at the moment.</string>
+    <string name="label_effect">Effect: %1$s</string>
+</resources>

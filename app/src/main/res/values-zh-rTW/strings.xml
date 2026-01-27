@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">火車時刻表 Train Live</string>
+
+    <string name="nav_home">首頁</string>
+    <string name="nav_search">搜尋</string>
+    <string name="nav_settings">設定</string>
+
+    <string name="label_from_city">出發縣市</string>
+    <string name="label_from_station">出發車站</string>
+    <string name="label_to_city">抵達縣市</string>
+    <string name="label_to_station">抵達車站</string>
+    <string name="label_date">日期</string>
+    <string name="label_time">時間</string>
+    <string name="label_car_type">車種</string>
+    <string name="btn_search">搜尋車次</string>
+    <string name="select_city_first">請先選擇縣市</string>
+    <string name="loading">載入中...</string>
+    <string name="no_results">此時段無車次</string>
+    <string name="results_header">搜尋結果</string>
+
+    <string name="status_on_time">準點</string>
+    <string name="status_delay">晚 %1$d 分</string>
+    <string name="bound_for">往 %1$s</string>
+
+    <string name="settings_title">設定</string>
+    <string name="settings_language">語言</string>
+    <string name="dialog_select_language">選擇語言</string>
+    <string name="btn_cancel">取消</string>
+
+    <string name="welcome_message">歡迎！請前往搜尋分頁查找車次。</string>
+
+    <string name="car_type_all">所有車種</string>
+    <string name="car_type_tze_chiang">自強號</string>
+    <string name="car_type_puyuma">太魯閣/普悠瑪</string>
+    <string name="car_type_local">區間車</string>
+
+    <string name="settings_tdx_credentials">TDX API 金鑰設定</string>
+    <string name="label_client_id">Client ID</string>
+    <string name="label_client_secret">Client Secret</string>
+    <string name="btn_save">儲存設定</string>
+    <string name="msg_credentials_saved">設定已儲存並重設連線。</string>
+
+    <string name="btn_add_favorite">加入收藏</string>
+    <string name="favorites_title">收藏路線</string>
+    <string name="no_favorites">尚無收藏路線。</string>
+
+    <string name="search_header">想去哪裡？</string>
+    <string name="label_origin">出發地</string>
+    <string name="label_destination">目的地</string>
+    <string name="placeholder_city">縣市</string>
+    <string name="placeholder_station">車站</string>
+
+    <string name="alerts_title">臺鐵即時通報</string>
+    <string name="no_alerts">目前無即時通報。</string>
+    <string name="label_effect">影響範圍：%1$s</string>
+</resources>
