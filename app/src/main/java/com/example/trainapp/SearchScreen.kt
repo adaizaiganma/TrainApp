@@ -8,6 +8,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
@@ -285,6 +289,8 @@ fun SearchScreen(
 
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val citySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val stationSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // State for City/Station sheets
     var showCitySheet by remember { mutableStateOf(false) }
@@ -305,6 +311,12 @@ fun SearchScreen(
         in 12..17 -> "Good Afternoon"
         else -> "Good Evening"
     }
+
+    val cityOrder = listOf(
+        "基隆市", "臺北市", "新北市", "桃園市", "新竹縣", "新竹市", "苗栗縣", 
+        "臺中市", "彰化縣", "南投縣", "雲林縣", "嘉義縣", "嘉義市", "臺南市", 
+        "高雄市", "屏東縣", "宜蘭縣", "花蓮縣", "臺東縣"
+    )
 
     Box(
         modifier = modifier
@@ -402,30 +414,39 @@ fun SearchScreen(
     }
 
     if (showCitySheet) {
-        ListSelectionSheet(
+        val sortedCities = stationDataMap.keys.toList().sortedWith(compareBy { city ->
+            val index = cityOrder.indexOf(city)
+            if (index != -1) index else Int.MAX_VALUE
+        })
+        GridSelectionSheet(
             title = stringResource(R.string.placeholder_city),
-            items = stationDataMap.keys.toList().sorted(),
+            items = sortedCities,
             onItemSelected = {
                 if (selectionTarget == "origin") { originCity = it; originStation = null } 
                 else { destCity = it; destStation = null }
                 showCitySheet = false
+                showStationSheet = true
             },
-            onDismiss = { showCitySheet = false }
+            onDismiss = { showCitySheet = false },
+            sheetState = citySheetState
         )
     }
 
     if (showStationSheet) {
         val currentCity = if (selectionTarget == "origin") originCity else destCity
         val stations = stationDataMap[currentCity] ?: emptyList()
-        ListSelectionSheet(
+        // Sort stations by ID as a heuristic for north-to-south within a city
+        val sortedStations = stations.sortedBy { it.id }
+        GridSelectionSheet(
             title = stringResource(R.string.placeholder_station),
-            items = stations.map { it.name },
+            items = sortedStations.map { it.name },
             onItemSelected = { name ->
-                val station = stations.find { it.name == name }
+                val station = sortedStations.find { it.name == name }
                 if (selectionTarget == "origin") originStation = station else destStation = station
                 showStationSheet = false
             },
-            onDismiss = { showStationSheet = false }
+            onDismiss = { showStationSheet = false },
+            sheetState = stationSheetState
         )
     }
 
@@ -442,18 +463,102 @@ fun SearchScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun GridSelectionSheet(
+    title: String,
+    items: List<String>,
+    onItemSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+    sheetState: SheetState
+) {
+    val importantStations = remember {
+        setOf(
+            "基隆", "七堵", "南港", "臺北", "板橋", "桃園", "中壢", "新竹", "竹南", "苗栗",
+            "豐原", "臺中", "彰化", "員林", "斗六", "嘉義", "新營", "臺南", "岡山", "新左營",
+            "高雄", "屏東", "潮州", "宜蘭", "羅東", "花蓮", "玉里", "臺東"
+        )
+    }
+
+    TrainAppModalSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(items) { item ->
+                    val isImportant = importantStations.contains(item)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1.3f)
+                            .clickable { onItemSelected(item) },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isImportant) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) 
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = item,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = if (isImportant) FontWeight.ExtraBold else FontWeight.Bold
+                                ),
+                                textAlign = TextAlign.Center,
+                                color = if (isImportant) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun ListSelectionSheet(
     title: String,
     items: List<String>,
     onItemSelected: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
     TrainAppModalSheet(
-        onDismissRequest = onDismiss
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
                 items(items) { item ->
                     ListItem(
                         headlineContent = { Text(item, style = MaterialTheme.typography.bodyLarge) },

@@ -109,13 +109,12 @@ fun SearchResultSheet(
 ) {
     TrainAppModalSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        modifier = Modifier.fillMaxHeight(0.9f)
+        sheetState = sheetState
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp)
+                .navigationBarsPadding()
         ) {
             // Header
             Column(
@@ -155,7 +154,7 @@ fun SearchResultSheet(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp),
+                        .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -175,6 +174,7 @@ fun SearchResultSheet(
                 }
             } else {
                 LazyColumn(
+                    modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -191,7 +191,7 @@ fun SearchResultSheet(
 @Composable
 fun TrainAppModalSheet(
     onDismissRequest: () -> Unit,
-    sheetState: SheetState = rememberModalBottomSheetState(),
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -201,7 +201,7 @@ fun TrainAppModalSheet(
         dragHandle = { BottomSheetDefaults.DragHandle() },
         containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         content = content
     )
 }
