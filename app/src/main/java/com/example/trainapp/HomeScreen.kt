@@ -63,6 +63,8 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         in 12..17 -> "Good Afternoon"
         else -> "Good Evening"
     }
+    
+    val userName = app.userName.ifBlank { "User" }
 
     Box(
         modifier = modifier
@@ -95,7 +97,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "Train Live",
+                            text = userName,
                             style = MaterialTheme.typography.headlineLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 letterSpacing = (-1).sp
@@ -158,7 +160,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text(
                             text = stringResource(R.string.alerts_title),
                             style = MaterialTheme.typography.titleLarge,

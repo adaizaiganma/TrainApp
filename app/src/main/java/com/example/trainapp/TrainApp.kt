@@ -29,6 +29,10 @@ class TrainApp : Application() {
         get() = prefs.getString("client_secret", "") ?: ""
         set(value) = prefs.edit().putString("client_secret", value).apply()
 
+    var userName: String
+        get() = prefs.getString("user_name", "") ?: ""
+        set(value) = prefs.edit().putString("user_name", value).apply()
+
     // --- Favorites Logic ---
     private val gson = Gson()
 

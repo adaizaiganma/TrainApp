@@ -9,6 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +31,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     // --- State for Dialogs ---
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showCredentialsDialog by remember { mutableStateOf(false) }
+    var showNameDialog by remember { mutableStateOf(false) }
 
     // --- State for Language Name ---
     val currentLocale = AppCompatDelegate.getApplicationLocales().toLanguageTags()
@@ -51,6 +53,14 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
+        // --- User Name Section ---
+        SettingsItem(
+            icon = Icons.Default.Person,
+            title = "Username",
+            value = app.userName.ifBlank { "Not set" },
+            onClick = { showNameDialog = true }
+        )
+
         // --- TDX Credentials Section ---
         SettingsItem(
             icon = Icons.Default.VpnKey,
@@ -65,6 +75,36 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             title = stringResource(R.string.settings_language),
             value = currentLanguageName,
             onClick = { showLanguageDialog = true }
+        )
+    }
+
+    // Name Dialog
+    if (showNameDialog) {
+        var tempName by remember { mutableStateOf(app.userName) }
+        AlertDialog(
+            onDismissRequest = { showNameDialog = false },
+            title = { Text("Set Username") },
+            text = {
+                OutlinedTextField(
+                    value = tempName,
+                    onValueChange = { tempName = it },
+                    label = { Text("Username") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    app.userName = tempName
+                    showNameDialog = false
+                }) {
+                    Text(stringResource(R.string.btn_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNameDialog = false }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
         )
     }
 

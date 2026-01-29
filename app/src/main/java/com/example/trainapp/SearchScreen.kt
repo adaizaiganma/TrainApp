@@ -348,12 +348,6 @@ fun SearchScreen(
         TrainRepository.fetchAllStations { map -> stationDataMap = map }
     }
 
-    val greeting = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
-        in 0..11 -> "Good Morning"
-        in 12..17 -> "Good Afternoon"
-        else -> "Good Evening"
-    }
-
     val cityOrder = listOf(
         "基隆市", "臺北市", "新北市", "桃園市", "新竹縣", "新竹市", "苗栗縣", 
         "臺中市", "彰化縣", "南投縣", "雲林縣", "嘉義縣", "嘉義市", "臺南市", 
@@ -379,7 +373,6 @@ fun SearchScreen(
         ) {
             item {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
-                    Text(greeting, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                     Text(stringResource(R.string.nav_search), style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black))
                 }
             }
