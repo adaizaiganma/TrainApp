@@ -1,5 +1,5 @@
 # TrainApp
-## A Train app that looks better than taiwan railway app
+### A Train app that looks better than taiwan railway app
 
 I found that the ux and ui of the twrw app is shit.
 so i create this for myself.
