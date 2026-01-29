@@ -123,7 +123,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                         setLanguage("en")
                         showLanguageDialog = false
                     }
-                    LanguageOption("Traditional Chinese (繁體中文)", currentLanguageName) {
+                    LanguageOption("繁體中文", currentLanguageName) {
                         setLanguage("zh-TW")
                         showLanguageDialog = false
                     }

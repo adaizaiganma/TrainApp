@@ -1,9 +1,6 @@
 package com.example.trainapp
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,7 +9,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
@@ -25,64 +21,110 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateTimeRow(
-    date: String,
-    time: String,
+    selectedDate: String,
+    selectedTime: String,
     onDateSelected: (String) -> Unit,
     onTimeSelected: (String) -> Unit
 ) {
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
-    val datePickerDialog = DatePickerDialog(
-        context,
-        { _, year, month, day ->
-            val formattedDate = "$year-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
-            onDateSelected(formattedDate)
-        },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
+    val apiSdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val displaySdf = SimpleDateFormat("d MMM", Locale.ENGLISH)
+
+    // Date Picker State
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = try {
+            apiSdf.parse(selectedDate)?.time
+        } catch (e: Exception) {
+            System.currentTimeMillis()
+        }
     )
 
-    val timePickerDialog = TimePickerDialog(
-        context,
-        { _, hour, minute ->
-            val formattedTime = "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
-            onTimeSelected(formattedTime)
-        },
-        calendar.get(Calendar.HOUR_OF_DAY),
-        calendar.get(Calendar.MINUTE),
-        true
+    // Time Picker State
+    val timePickerState = rememberTimePickerState(
+        initialHour = selectedTime.split(":")[0].toIntOrNull() ?: 0,
+        initialMinute = selectedTime.split(":")[1].toIntOrNull() ?: 0,
+        is24Hour = true
     )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        // DatePickerState uses UTC millis. Convert to local date string.
+                        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                        calendar.timeInMillis = millis
+                        onDateSelected(apiSdf.format(calendar.time))
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.btn_cancel)) }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val formattedTime = "${timePickerState.hour.toString().padStart(2, '0')}:${timePickerState.minute.toString().padStart(2, '0')}"
+                    onTimeSelected(formattedTime)
+                    showTimePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text(stringResource(R.string.btn_cancel)) }
+            },
+            text = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    TimePicker(state = timePickerState)
+                }
+            }
+        )
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        val displayDate = try {
+            val date = apiSdf.parse(selectedDate)
+            if (date != null) displaySdf.format(date) else selectedDate
+        } catch (e: Exception) {
+            selectedDate
+        }
+
         FancySelectionBox(
             modifier = Modifier.weight(1f),
             label = stringResource(R.string.label_date),
-            value = date,
+            value = displayDate,
             icon = Icons.Default.CalendarMonth,
-            onClick = { datePickerDialog.show() }
+            onClick = { showDatePicker = true }
         )
         FancySelectionBox(
             modifier = Modifier.weight(1f),
             label = stringResource(R.string.label_time),
-            value = time,
+            value = selectedTime,
             icon = Icons.Default.Schedule,
-            onClick = { timePickerDialog.show() }
+            onClick = { showTimePicker = true }
         )
     }
 }
