@@ -1,6 +1,6 @@
 ## A Train app that looks better than taiwan railway app
 
-I found that the ux and ui of the twrw app is shit
+I found that the ux and ui of the twrw app is shit.
 
 so i create this for myself.
 
@@ -11,3 +11,8 @@ so i create this for myself.
    (cause im applying for an organization account, not sure if the verify step is neccecery)
 3. Login and create a new api key.
 4. Enter the api key in the setting page on the app.
+
+# Screenshots
+<img width="1080" height="2400" alt="Screenshot_20260129_111117" src="https://github.com/user-attachments/assets/4119b7ac-4b56-4c17-8128-e4e5f3c6ff53" />
+
+<img width="1080" height="2400" alt="Screenshot_20260129_111056" src="https://github.com/user-attachments/assets/a1d80ade-26a1-4d18-ad8c-ab018665183e" />
